@@ -20,6 +20,7 @@ export interface Order {
   total: number;
   payment_method: 'cash' | 'card';
   status: 'pending' | 'preparing' | 'ready' | 'delivered' | 'cancelled';
+  customer_name: string;
   created_at: number;
 }
 

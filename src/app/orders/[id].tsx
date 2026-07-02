@@ -79,7 +79,13 @@ export default function OrderDetailScreen() {
           </View>
         </View>
 
-        <View style={styles.infoCard}>
+          <View style={styles.infoCard}>
+          {order.customer_name ? (
+            <View style={styles.infoRow}>
+              <Text style={styles.infoLabel}>Cliente</Text>
+              <Text style={[styles.infoValue, { color: COLORS.primary }]}>{order.customer_name}</Text>
+            </View>
+          ) : null}
           <View style={styles.infoRow}>
             <Text style={styles.infoLabel}>Fecha</Text>
             <Text style={styles.infoValue}>{formatDateTime(order.created_at)}</Text>

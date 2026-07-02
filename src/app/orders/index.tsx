@@ -74,7 +74,10 @@ export default function OrdersScreen() {
           filtered.map((order) => (
             <TouchableOpacity key={order.id} style={styles.orderCard} onPress={() => router.push(`/orders/${order.id}`)}>
               <View style={styles.orderHeader}>
-                <Text style={styles.orderId}>Pedido #{order.id}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.orderId}>Pedido #{order.id}</Text>
+                  {order.customer_name ? <Text style={styles.orderCustomer}>{order.customer_name}</Text> : null}
+                </View>
                 <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[order.status] + '20' }]}>
                   <Text style={[styles.statusText, { color: STATUS_COLORS[order.status] }]}>
                     {ORDER_STATUSES[order.status as keyof typeof ORDER_STATUSES]}
@@ -109,6 +112,7 @@ const styles = StyleSheet.create({
   orderCard: { backgroundColor: COLORS.white, borderRadius: 10, padding: 14, marginBottom: 8, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 2 },
   orderHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
   orderId: { fontSize: 16, fontWeight: '700', color: COLORS.text },
+  orderCustomer: { fontSize: 12, color: COLORS.primary, fontWeight: '500', marginTop: 2 },
   statusBadge: { paddingVertical: 3, paddingHorizontal: 10, borderRadius: 12 },
   statusText: { fontSize: 12, fontWeight: '600' },
   orderDetails: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },

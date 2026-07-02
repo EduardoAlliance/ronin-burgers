@@ -101,8 +101,8 @@ export const deleteProduct = async (id: number): Promise<void> => {
 };
 
 // Orders
-export const createOrder = async (total: number, paymentMethod: 'cash' | 'card', items: { productId: number; quantity: number; unitPrice: number }[]): Promise<number> => {
-  const result = await executeWrite('INSERT INTO orders (total, payment_method) VALUES (?, ?)', [total, paymentMethod]);
+export const createOrder = async (total: number, paymentMethod: 'cash' | 'card', items: { productId: number; quantity: number; unitPrice: number }[], customerName = ''): Promise<number> => {
+  const result = await executeWrite('INSERT INTO orders (total, payment_method, customer_name) VALUES (?, ?, ?)', [total, paymentMethod, customerName]);
   const orderId = result.lastInsertRowId;
 
   for (const item of items) {

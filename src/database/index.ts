@@ -77,6 +77,7 @@ export const initDatabase = async (): Promise<void> => {
       total REAL NOT NULL,
       payment_method TEXT NOT NULL CHECK(payment_method IN ('cash', 'card')),
       status TEXT NOT NULL DEFAULT 'pending' CHECK(status IN ('pending', 'preparing', 'ready', 'delivered', 'cancelled')),
+      customer_name TEXT DEFAULT '',
       created_at INTEGER DEFAULT (strftime('%s','now'))
     );
 
@@ -112,4 +113,8 @@ export const initDatabase = async (): Promise<void> => {
       value TEXT NOT NULL
     );
   `);
+
+  try {
+    await database.execAsync("ALTER TABLE orders ADD COLUMN customer_name TEXT DEFAULT ''");
+  } catch {}
 };

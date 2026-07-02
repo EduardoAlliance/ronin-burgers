@@ -114,6 +114,12 @@ export default function Dashboard() {
                 onPress={() => router.push(`/orders/${order.id}`)}
                 activeOpacity={0.7}
               >
+
+                <View>
+                      {order.customer_name ? (
+                  <Text style={styles.orderCustomer}>{order.customer_name}</Text>
+                ) : null}
+                </View>
                 <View style={styles.orderHeader}>
                   <View style={styles.orderInfo}>
                     <Text style={styles.orderId}>Pedido #{order.id}</Text>
@@ -126,6 +132,7 @@ export default function Dashboard() {
                   </View>
                 </View>
 
+              
                 <View style={styles.orderBody}>
                   <View style={styles.orderDetail}>
                     <MaterialIcons name="payments" size={16} color={COLORS.textSecondary} />
@@ -216,9 +223,10 @@ const styles = StyleSheet.create({
     shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.05, shadowRadius: 3, elevation: 2,
   },
   orderHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  orderInfo: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  orderInfo: { flexDirection: 'row', alignItems: 'center', gap: 10},
   orderId: { fontSize: 15, fontWeight: '700', color: COLORS.text },
   orderTime: { fontSize: 13, color: COLORS.textSecondary },
+  orderCustomer: { fontSize: 18, color: COLORS.primary, fontWeight: '600', marginBottom: 8 },
   statusBadge: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
   statusText: { fontSize: 12, fontWeight: '600' },
   orderBody: { flexDirection: 'row', gap: 20, marginBottom: 10 },

@@ -9,6 +9,10 @@ dist/
 web-build/
 expo-env.d.ts
 
+.agents/
+.claude/
+.vscode/
+
 # Native
 .kotlin/
 *.orig.*

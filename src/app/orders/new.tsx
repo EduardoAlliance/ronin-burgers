@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, TouchableOpacity, Alert, Animated, Keyboard, TouchableWithoutFeedback } from 'react-native';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -23,6 +23,7 @@ export default function NewOrderScreen() {
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'card'>('cash');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [showCart, setShowCart] = useState(false);
+  const [customerName, setCustomerName] = useState('');
 
   const filteredProducts = selectedCategory
     ? state.products.filter((p: { category_id: number | null; is_active: number }) => p.category_id === selectedCategory && p.is_active === 1)
@@ -51,7 +52,7 @@ export default function NewOrderScreen() {
   const handleConfirm = async () => {
     if (cart.length === 0) { Alert.alert('Carrito vacío', 'Agrega productos al pedido'); return; }
     try {
-      const orderId = await createOrder(total, paymentMethod, cart.map((i) => ({ productId: i.productId, quantity: i.quantity, unitPrice: i.unitPrice })));
+      const orderId = await createOrder(total, paymentMethod, cart.map((i) => ({ productId: i.productId, quantity: i.quantity, unitPrice: i.unitPrice })), customerName);
       await refreshData();
 
       const printer = await getSavedPrinter();
@@ -109,7 +110,7 @@ export default function NewOrderScreen() {
       </View>
 
       <View style={styles.mainContent}>
-        <ScrollView style={styles.productList} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
+        <ScrollView style={styles.productList} scrollEnabled={!showCart} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 20 }}>
           {filteredProducts.map((product: { id: number; name: string; price: number }) => {
             const qty = getQty(product.id);
             return (
@@ -140,11 +141,14 @@ export default function NewOrderScreen() {
         </ScrollView>
 
         {showCart && (
+          <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
           <View style={styles.cartCard}>
             <TouchableOpacity onPress={() => setShowCart(false)} activeOpacity={0.7} style={styles.cartHandleArea}>
               <View style={styles.cartHandle} />
             </TouchableOpacity>
-            <ScrollView style={styles.cartItems} showsVerticalScrollIndicator={false}>
+            <TextInput style={styles.customerNameInput} placeholder="Nombre del cliente (opcional)"
+              value={customerName} onChangeText={setCustomerName} placeholderTextColor={COLORS.textSecondary} />
+            <ScrollView style={styles.cartItems} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
               {cart.map((item) => (
                 <View key={item.productId} style={styles.cartItem}>
                   <View style={{ flex: 1 }}>
@@ -185,6 +189,7 @@ export default function NewOrderScreen() {
               <Button title="Confirmar Pedido" onPress={handleConfirm} />
             </View>
           </View>
+          </TouchableWithoutFeedback>
         )}
       </View>
 
@@ -266,6 +271,10 @@ const styles = StyleSheet.create({
   cartHandleArea: { alignSelf: 'center', paddingVertical: 10, paddingHorizontal: 40 },
   cartHandle: {
     width: 40, height: 5, borderRadius: 3, backgroundColor: COLORS.border,
+  },
+  customerNameInput: {
+    backgroundColor: COLORS.background, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 8,
+    fontSize: 14, color: COLORS.text, marginHorizontal: 0, marginBottom: 8,
   },
   cartItems: { flex: 1 },
   cartItem: { flexDirection: 'row', alignItems: 'center', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: COLORS.border },
