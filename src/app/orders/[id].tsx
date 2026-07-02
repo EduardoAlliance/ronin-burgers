@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { formatCurrency, formatDateTime } from '@/utils/formatters';
 import { ORDER_STATUSES, COLORS } from '@/utils/constants';
 import { Order, OrderItem } from '@/types';
 import { useApp } from '@/context/AppContext';
+import { getSavedPrinter, printKitchenTicket, printCustomerTicket } from '@/services/printer';
 
 const STATUS_FLOW = ['pending', 'preparing', 'ready', 'delivered'] as const;
 const STATUS_ACTIONS: Record<string, string> = {
@@ -114,12 +115,39 @@ export default function OrderDetailScreen() {
         )}
       </ScrollView>
 
-      {order.status !== 'cancelled' && order.status !== 'delivered' && (
+      {(order.status !== 'cancelled' && order.status !== 'delivered') || items.length > 0 ? (
         <View style={styles.actions}>
-          {nextAction && <Button title={nextAction} onPress={handleAdvanceStatus} style={{ flex: 1 }} />}
-          <Button title="Cancelar Pedido" variant="danger" onPress={handleCancel} style={{ flex: 1 }} />
+          {order.status !== 'cancelled' && order.status !== 'delivered' && (
+            <>
+              {nextAction && <Button title={nextAction} onPress={handleAdvanceStatus} style={{ flex: 1 }} />}
+              <Button title="Cancelar Pedido" variant="danger" onPress={handleCancel} style={{ flex: 1 }} />
+            </>
+          )}
+          <Button
+            title="Reimprimir"
+            variant={order.status === 'delivered' ? 'primary' : 'secondary'}
+            onPress={async () => {
+              const printer = await getSavedPrinter();
+              if (!printer) {
+                Alert.alert('Sin impresora', 'Configura una impresora en Ajustes');
+                return;
+              }
+              Alert.alert('Reimprimir', '¿Qué ticket deseas imprimir?', [
+                {
+                  text: 'Cocina',
+                  onPress: () => printKitchenTicket(order.id, items.map((i) => ({ productName: i.productName || '', quantity: i.quantity }))),
+                },
+                {
+                  text: 'Cliente',
+                  onPress: () => printCustomerTicket(order.id, items.map((i) => ({ productName: i.productName || '', quantity: i.quantity, unitPrice: i.unit_price })), order.total, order.payment_method),
+                },
+                { text: 'Cancelar', style: 'cancel' },
+              ]);
+            }}
+            style={order.status === 'delivered' ? { flex: 1 } : {}}
+          />
         </View>
-      )}
+      ) : null}
     </View>
   );
 }

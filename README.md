@@ -1,56 +1,124 @@
-# Welcome to your Expo app 👋
+# 🍔 Ronin Burgers — Gestión de Pedidos
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+[![React Native](https://img.shields.io/badge/React_Native-0.81.5-61DAFB?style=flat&logo=react)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo_SDK-54-000020?style=flat&logo=expo)](https://expo.dev/)
+[![SQLite](https://img.shields.io/badge/SQLite-Expo-003B57?style=flat&logo=sqlite)](https://docs.expo.dev/versions/latest/sdk/sqlite/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 
-## Get started
+Aplicación móvil nativa en React Native (Expo) para la gestión de pedidos de una hamburguesería real. En uso actualmente en un local, corriendo en un solo dispositivo Android/iOS sin necesidad de internet.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## 📱 Descripción
 
-2. Start the app
+App offline-first con SQLite local. Sin login, sin cloud, sin inventario. Enfocada en lo esencial:
 
-   ```bash
-   npx expo start
-   ```
+- **Menú** — CRUD de productos y categorías
+- **Pedidos** — Crear, cancelar (con motivo), historial, detalle por ID
+- **Finanzas** — Dashboard de ventas, registro de gastos, balance
+- **Configuración** — Datos del negocio (nombre, dirección, teléfono)
 
-In the output, you'll find options to open the app in a
+Diseñada para ser usada por empleados en una tablet o teléfono compartido.
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🚀 Stack
 
-## Get a fresh project
+| Capa | Tecnología |
+|---|---|
+| Framework | React Native 0.81.5 |
+| Plataforma | Expo SDK 54 |
+| Navegación | expo-router v6 (file-based) |
+| Base de datos | expo-sqlite v16 (SQLite local) |
+| Estado global | React Context + useReducer |
+| Tipado | TypeScript 5.9 |
+| Íconos | @expo/vector-icons (MaterialIcons) |
+| Fechas | date-fns |
+| Animaciones | react-native-reanimated |
+| Gestos | react-native-gesture-handler |
 
-When you're ready, run:
+---
 
-```bash
-npm run reset-project
+## 🏗️ Arquitectura
+
+```
+src/
+├── app/            # Expo Router — rutas basadas en archivos
+│   ├── _layout.tsx
+│   ├── index.tsx   # Dashboard
+│   ├── finances/   # Finanzas, gastos
+│   ├── menu/       # CRUD productos y categorías
+│   ├── orders/     # Pedidos (nuevo, detalle, cancelar, historial)
+│   └── settings/   # Datos del negocio
+├── components/     # UI reutilizable (Button, Card, Input, Modal, Header)
+├── context/        # AppContext — estado global + refreshData()
+├── database/       # Schema SQLite + migraciones preparadas para v2
+├── hooks/          # useDatabase.ts — CRUD completo con retry/reconnect
+├── services/       # printer.ts — impresión Bluetooth (ESC/POS)
+├── types/          # Interfaces TypeScript compartidas
+└── utils/          # Constantes (colores, estados) y formateadores
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Decisiones técnicas
 
-### Other setup steps
+- **Sin login ni cloud** — base de datos local, cero dependencia de red
+- **SQLite con WAL** — modo WAL + `synchronous = NORMAL` para mejor performance en Android
+- **Retry automático** — wrapper `withRetry` que reconecta y reintenta hasta 3 veces ante fallos del native driver
+- **Sin inventario ni recetas** — funcionalidad prevista para v2, migraciones ya preparadas
+- **Impresora Bluetooth** — integración con react-native-thermal-printer, escaneo y conexión desde Ajustes, impresión de tickets de cocina y cliente al confirmar pedido, reimpresión desde detalle de pedido
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+---
 
-## Learn more
+## 🖨️ Impresión Bluetooth
 
-To learn more about developing your project with Expo, look at the following resources:
+Integración con `react-native-thermal-printer` para impresión térmica ESC/POS por Bluetooth.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- **Configuración** — Escaneo y conexión de impresoras desde la pantalla de Ajustes
+- **Ticket de cocina** — Se imprime automáticamente al confirmar un pedido (nombre del producto + cantidad)
+- **Ticket de cliente** — Se imprime con detalle de productos, cantidades, precios, total y método de pago
+- **Reimpresión** — Botón "Reimprimir" en la pantalla de detalle del pedido
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## ✨ Features
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Dashboard con resumen de ventas del día + pedidos pendientes
+- Creación de pedidos con carrito expandible (bottom card overlay)
+- Dos métodos de pago: efectivo y tarjeta
+- Cancelación de pedidos con motivo obligatorio
+- Avance de estado: pendiente → preparando → listo → entregado
+- CRUD completo de productos y categorías
+- Registro de gastos operativos
+- Balance financiero: ventas - gastos
+- Migraciones de base de datos preparadas para v2
+
+---
+
+## 🧠 Desarrollo asistido por IA
+
+Parte del código fue desarrollado con asistencia de IA (OpenCode), enfocada en:
+
+- Mejoras de rendimiento en consultas SQLite
+- Patrones de componentes reutilizables
+- Buenas prácticas de TypeScript (tipado estricto, cero errores en `tsc --noEmit`)
+- Arquitectura limpia y escalable
+- Manejo robusto de errores en base de datos nativa
+
+---
+
+## 📦 Instalación
+
+```bash
+git clone git@github.com:EduardoAlliance/ronin-burgers.git
+cd ronin-burgers
+npm install
+npx expo start
+```
+
+Escanea el código QR con Expo Go (Android) o la app de Expo (iOS).
+
+---
+
+## 📄 Licencia
+
+MIT

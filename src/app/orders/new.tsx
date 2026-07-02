@@ -9,6 +9,7 @@ import { useApp } from '@/context/AppContext';
 import { createOrder } from '@/hooks/useDatabase';
 import { formatCurrency } from '@/utils/formatters';
 import { COLORS, PAYMENT_METHODS } from '@/utils/constants';
+import { getSavedPrinter, printKitchenTicket, printCustomerTicket } from '@/services/printer';
 
 interface CartItem {
   productId: number; productName: string; quantity: number; unitPrice: number;
@@ -50,10 +51,37 @@ export default function NewOrderScreen() {
   const handleConfirm = async () => {
     if (cart.length === 0) { Alert.alert('Carrito vacío', 'Agrega productos al pedido'); return; }
     try {
-      await createOrder(total, paymentMethod, cart.map((i) => ({ productId: i.productId, quantity: i.quantity, unitPrice: i.unitPrice })));
+      const orderId = await createOrder(total, paymentMethod, cart.map((i) => ({ productId: i.productId, quantity: i.quantity, unitPrice: i.unitPrice })));
       await refreshData();
-      Alert.alert('Pedido creado', `Total: ${formatCurrency(total)}`, [{ text: 'OK', onPress: () => router.back() }]);
-    } catch { Alert.alert('Error', 'No se pudo crear el pedido'); }
+
+      const printer = await getSavedPrinter();
+      if (printer) {
+        const items = cart.map((i) => ({ productName: i.productName, quantity: i.quantity, unitPrice: i.unitPrice }));
+
+        Alert.alert('Pedido creado', `Total: ${formatCurrency(total)}\n\n¿Imprimir tickets?`, [
+          {
+            text: 'Solo cocina',
+            onPress: async () => {
+              await printKitchenTicket(orderId, items);
+              router.back();
+            },
+          },
+          {
+            text: 'Ambos',
+            onPress: async () => {
+              await printKitchenTicket(orderId, items);
+              await printCustomerTicket(orderId, items, total, paymentMethod);
+              router.back();
+            },
+          },
+          { text: 'No', style: 'cancel', onPress: () => router.back() },
+        ]);
+      } else {
+        Alert.alert('Pedido creado', `Total: ${formatCurrency(total)}`, [{ text: 'OK', onPress: () => router.back() }]);
+      }
+    } catch {
+      Alert.alert('Error', 'No se pudo crear el pedido');
+    }
   };
 
   const getQty = (productId: number) => {
