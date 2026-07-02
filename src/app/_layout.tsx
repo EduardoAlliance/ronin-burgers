@@ -1,18 +1,25 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { Stack } from 'expo-router';
+import { AppProvider } from '@/context/AppContext';
+import { StatusBar } from 'expo-status-bar';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
-
-SplashScreen.preventAutoHideAsync();
-
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <AppProvider>
+      <StatusBar style="dark" />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="menu/index" />
+        <Stack.Screen name="menu/category-form" />
+        <Stack.Screen name="menu/product-form" />
+        <Stack.Screen name="orders/index" />
+        <Stack.Screen name="orders/new" />
+        <Stack.Screen name="orders/[id]" />
+        <Stack.Screen name="orders/cancel-form" />
+        <Stack.Screen name="finances/index" />
+        <Stack.Screen name="finances/expenses" />
+        <Stack.Screen name="finances/expense-form" />
+        <Stack.Screen name="settings/index" />
+      </Stack>
+    </AppProvider>
   );
 }
